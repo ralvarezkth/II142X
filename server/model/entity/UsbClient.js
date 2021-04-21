@@ -3,6 +3,12 @@
 const { Sequelize, DataTypes, Model } = require("sequelize");
 
 class UsbClient extends Model {
+    /**
+     * Initializes the UsbClient model.
+     *
+     * @param {Sequelize} sequelize A sequelize connection instance object.
+     * @return            A sequelize model describing the UsbClient entity.
+     */
     static createModel(sequelize) {
         UsbClient.init({
             id: {

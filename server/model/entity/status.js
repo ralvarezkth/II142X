@@ -3,6 +3,12 @@
 const { Sequelize, DataTypes, Model } = require("sequelize");
 
 class Status extends Model {
+    /**
+     * Initializes the Status model.
+     *
+     * @param {Sequelize} sequelize A sequelize connection instance object.
+     * @return            A sequelize model describing the Status entity.
+     */
     static createModel(sequelize) {
         Status.init({
             id: {

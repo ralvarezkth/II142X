@@ -3,6 +3,12 @@
 const { Sequelize, DataTypes, Model } = require("sequelize");
 
 class Room extends Model {
+    /**
+     * Initializes the Room model.
+     *
+     * @param {Sequelize} sequelize A sequelize connection instance object.
+     * @return            A sequelize model describing the Room entity.
+     */
     static createModel(sequelize) {
         Room.init({
             id: {

@@ -3,6 +3,12 @@
 const { Sequelize, DataTypes, Model } = require("sequelize");
 
 class Guard extends Model {
+    /**
+     * Initializes the Guard model.
+     *
+     * @param {Sequelize} sequelize A sequelize connection instance object.
+     * @return            A sequelize model describing the Guard entity.
+     */
     static createModel(sequelize) {
         Guard.init({
             id: {

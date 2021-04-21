@@ -3,6 +3,12 @@
 const { Sequelize, DataTypes, Model } = require("sequelize");
 
 class Student extends Model {
+    /**
+     * Initializes the Student model.
+     *
+     * @param {Sequelize} sequelize A sequelize connection instance object.
+     * @return            A sequelize model describing the Student entity.
+     */
     static createModel(sequelize) {
         Student.init({
             id: {
