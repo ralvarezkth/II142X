@@ -95,13 +95,6 @@ class Integration {
     }
 
     /**
-     * Called to stop the automatic randomization of ping values.
-     */
-    stopRandomizer() {
-        this.interval.clear();
-    }
-
-    /**
      * Called to retrieve all registered rooms.
      *
      * @returns A list of all registered rooms.
