@@ -34,7 +34,7 @@ class Integration {
         await this.initTables();
         this.minIntervalMinutes = 10;
         this.maxIntervalMinutes = 30;
-        this.interval = this.setRandomInterval(async() => this.randomizePing(), this.minIntervalMinutes * 600, this.maxIntervalMinutes * 600);
+        this.interval = this.setRandomInterval(async() => this.randomizePing(), this.minIntervalMinutes * 60000, this.maxIntervalMinutes * 60000);
     }
 
     initModels() {
