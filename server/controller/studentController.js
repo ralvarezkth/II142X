@@ -14,16 +14,6 @@ class StudentController {
     }
 
     /**
-     * Called to connect a student to a specific room and usb stick.
-     *
-     * @param {StudentDTO} student A StudentDTO containing information about the connecting student.
-     * @returns            The connected Student entity.
-     */
-    connectStudent(student) {
-        return this.integration.connectStudent(student);
-    }
-
-    /**
      * Called to ping the server and increment the ping value of the specified Student entity.
      *
      * @param {number} id The id of the Student entity to modify.

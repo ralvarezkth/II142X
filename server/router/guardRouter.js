@@ -2,6 +2,7 @@ const express = require("express");
 const { GuardCtrl } = require("../controller");
 const router = express.Router();
 const ValidatorUtil = require("../util/validatorUtil");
+const StudentDTO = require("../model/dto/StudentDTO");
 
 /* PUT /api/guard/students/:id/status - Set status of specified student. */
 router.put("/students/:id/status/:statusId", function(req, res) {
@@ -69,6 +70,32 @@ router.get("/rooms", function(req, res) {
         });
 });
 
+/* POST /api/student/connect - Create student. */
+router.post("/connect", function(req, res) {
+    const validator = new ValidatorUtil();
+    const validatedStudent = validator.validateStudent(req.body.student);
+    if (!validatedStudent.error) {
+        const { usbId, roomId, statusId } = validatedStudent;
+        const newStudent = new StudentDTO(null, usbId, roomId, statusId, 1);
+        connectStudent(newStudent)
+            .then(data => res.json(data))
+            .catch(error => {
+                res.status(500).json({ error: VError.info(error).message });
+            });
+    } else {
+        res.status(400).json({ error: validatedStudent.error });
+    }
+});
+
+/* GET /api/guard/ping - Get current randomized ping value. */
+router.get("/ping", function(req, res) {
+    getPing()
+        .then(ping => res.json(ping))
+        .catch(error => {
+            res.status(500).json({ error });
+        });
+});
+
 async function getStudents() {
     return await GuardCtrl.getStudents();
 }
@@ -87,5 +114,13 @@ async function getRooms() {
 
 async function getStudentsByRoomId(id) {
     return await GuardCtrl.getStudentsByRoomId(id);
+}
+
+async function connectStudent(student) {
+    return await GuardCtrl.connectStudent(student);
+}
+
+async function getPing() {
+    return await GuardCtrl.getPing();
 }
 module.exports = router;

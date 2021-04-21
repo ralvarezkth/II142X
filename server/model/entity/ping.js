@@ -2,15 +2,15 @@
 
 const { Sequelize, DataTypes, Model } = require("sequelize");
 
-class Room extends Model {
+class Ping extends Model {
     /**
-     * Initializes the Room model.
+     * Initializes the Ping model.
      *
      * @param {Sequelize} sequelize A sequelize connection instance object.
-     * @return            A sequelize model describing the Room entity.
+     * @return            A sequelize model describing the Ping entity.
      */
     static createModel(sequelize) {
-        Room.init({
+        Ping.init({
             id: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
@@ -18,22 +18,18 @@ class Room extends Model {
                 autoIncrement: true,
                 primaryKey: true,
             },
-            name: {
-                type: DataTypes.STRING,
-                allowNull: false,
-            },
-            grid: {
-                type: DataTypes.ARRAY(DataTypes.INTEGER),
+            value: {
+                type: DataTypes.INTEGER,
                 allowNull: false,
             },
         }, {
             sequelize,
-            modelName: "Room",
+            modelName: "Ping",
             freezeTableName: true,
             paranoid: false,
         });
 
-        return Room;
+        return Ping;
     }
 }
-module.exports = Room;
+module.exports = Ping;

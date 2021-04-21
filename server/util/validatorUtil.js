@@ -60,7 +60,7 @@ class ValidatorUtil {
     }
 
     /**
-     * Validates and sanitizes the values in the provided StudentDTO instance.
+     * Validates and sanitizes the ids in the provided StudentDTO instance.
      *
      * @param {StudentDTO} student The StudentDTO instance to be validated and sanitized.
      * @returns            Returns an object containing the validation errors as Object.error or
@@ -70,25 +70,7 @@ class ValidatorUtil {
         let reason = [];
         let keys = Object.keys(student);
         keys.splice(keys.indexOf("id"), 1);
-        keys.splice(keys.indexOf("usbId"), keys.length - 2);
 
-        keys.forEach(key => {
-            student[key] = Validator.escape(student[key]);
-            student[key] = Validator.ltrim(student[key]);
-            student[key] = Validator.rtrim(student[key]);
-            student[key] = Validator.stripLow(student[key]);
-        });
-
-        if (!Validator.matches(student.firstName, /^[a-zA-Z\\s\-]+$/) || !Validator.matches(student.lastName, /^[a-zA-Z\\s\-]+$/)) {
-            reason.push("Invalid name format; alphabetic characters as well as space and dash allowed.");
-        }
-
-        if (!Validator.matches(student.ssn, /^[0-9]{4}[0-1]((?<=0)[1-9]|(?<=1)[0-2])((?<!02)[0-3]|(?<=02)[0-2])((?<=[0-2])[0-9]|(?<=(013|033|053|073|083|103|123))[0-1]|(?<!(013|033|053|073|083|103|123))0)-[0-9]{4}$/)) {
-            reason.push("Invalid social security number; try again (YYYYMMDD-XXXX)");
-        }
-
-        keys = Object.keys(student);
-        keys.splice(keys.indexOf("id"), 4);
         keys.forEach(key => {
             let validatedId = this.validateId(student[key]);
             if (validatedId.error) {

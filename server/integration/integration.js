@@ -9,6 +9,7 @@ const UsbClient = require("../model/entity/UsbClient");
 const ValidatorUtil = require("../util/validatorUtil");
 const { WError } = require("verror");
 const StudentDTO = require("../model/dto/StudentDTO");
+const Ping = require("../model/entity/ping");
 
 class Integration {
     /**
@@ -31,6 +32,9 @@ class Integration {
     async initialize() {
         this.initModels();
         await this.initTables();
+        this.minIntervalMinutes = 10;
+        this.maxIntervalMinutes = 30;
+        this.interval = this.setRandomInterval(async() => this.randomizePing(), this.minIntervalMinutes * 600, this.maxIntervalMinutes * 600);
     }
 
     initModels() {
@@ -39,6 +43,7 @@ class Integration {
         Guard.createModel(this.database);
         Room.createModel(this.database);
         Status.createModel(this.database);
+        Ping.createModel(this.database);
         UsbClient.hasOne(Student, { foreignKey: "usbId" });
         Student.belongsTo(UsbClient, { foreignKey: "usbId" });
         Room.hasMany(Student, { foreignKey: "roomId" });
@@ -62,6 +67,38 @@ class Integration {
                 "Could not connect to the database."
             );
         }
+    }
+
+    setRandomInterval(intervalFunction, minDelay, maxDelay) {
+        let timeout;
+        const runInterval = () => {
+            const timeoutFunction = () => {
+                intervalFunction();
+                runInterval();
+            };
+            const delay = Math.floor(Math.random() * (maxDelay - minDelay + 1)) + minDelay;
+            timeout = setTimeout(timeoutFunction, delay);
+        };
+        runInterval();
+        return {
+            clear() {
+                clearTimeout(timeout);
+            },
+        };
+    }
+
+    /**
+     * Called to stop the automatic randomization of ping values.
+     */
+    stopPingRandomizer() {
+        this.interval.clear();
+    }
+
+    /**
+     * Called to stop the automatic randomization of ping values.
+     */
+    stopRandomizer() {
+        this.interval.clear();
     }
 
     /**
@@ -302,6 +339,54 @@ class Integration {
                     },
                 },
                 "Ping incrementation failed."
+            );
+        }
+    }
+
+    /**
+     * Called to set a new random ping value to all registered students.
+     *
+     * @returns An array containing the number of rows set to a new value.
+     */
+    async randomizePing() {
+        const newPingValue = Math.floor(Math.random() * (10000 - 100 + 1)) + 100;
+        try {
+            return await this.database.transaction(async t => {
+                const students = await Student.findAll({ transaction: t });
+                const studentIds = students.map(student => student.id);
+                await Ping.update({ value: newPingValue }, { where: { id: 1 }, transaction: t });
+                return await Student.update({ ping: newPingValue }, { where: { id: studentIds }, transaction: t });
+            });
+        } catch (error) {
+            throw new WError({
+                    name: "RandomPingFailedError",
+                    cause: error,
+                    info: {
+                        message: `An error occured when attempting to randomize the ping value, please try again later.`,
+                    },
+                },
+                "Ping randomization failed."
+            );
+        }
+    }
+
+    /**
+     * Called to retrieve the current randomized ping value.
+     *
+     * @returns Ping entity containing the current randomized ping value.
+     */
+    async getPing() {
+        try {
+            return await Ping.findOne({ where: { id: 1 } });
+        } catch (error) {
+            throw new WError({
+                    name: "RetrievePingFailedError",
+                    cause: error,
+                    info: {
+                        message: `An error occured when attempting to retrieve the ping value, please try again later.`,
+                    },
+                },
+                "Ping retrieval failed."
             );
         }
     }

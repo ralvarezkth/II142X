@@ -18,19 +18,6 @@ class Student extends Model {
                 autoIncrement: true,
                 primaryKey: true,
             },
-            firstName: {
-                type: DataTypes.STRING,
-                allowNull: false,
-            },
-            lastName: {
-                type: DataTypes.STRING,
-                allowNull: false,
-            },
-            ssn: {
-                type: DataTypes.STRING,
-                allowNull: false,
-                unique: true,
-            },
             usbId: {
                 type: DataTypes.INTEGER,
                 allowNull: false,

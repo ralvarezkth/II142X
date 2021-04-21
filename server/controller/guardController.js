@@ -76,5 +76,24 @@ class GuardController {
     getUser(username, password) {
         return this.integration.getUser(username, password);
     }
+
+    /**
+     * Called to connect a student to a specific room and usb stick.
+     *
+     * @param {StudentDTO} student A StudentDTO containing information about the connecting student.
+     * @returns            The connected Student entity.
+     */
+    connectStudent(student) {
+        return this.integration.connectStudent(student);
+    }
+
+    /**
+     * Called to retrieve the current randomized ping value.
+     *
+     * @returns Ping entity containing the current randomized ping value.
+     */
+    getPing() {
+        return this.integration.getPing();
+    }
 }
 module.exports = GuardController;
