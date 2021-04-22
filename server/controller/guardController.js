@@ -45,7 +45,7 @@ class GuardController {
      * Called to retrive a list of students registered at the specified room.
      *
      * @param {number} id The id of the room from which to retrieve students.
-     * @returns A list of students registered at the specified room.
+     * @returns        A list of students registered at the specified room.
      */
     getStudentsByRoomId(id) {
         return this.integration.getStudentsByRoomId(id);
@@ -57,7 +57,7 @@ class GuardController {
      * @param {number} statusId The statusId to change to.
      * @param {number} id The id of the student entity to modify.
      * @returns        The updated Student entity.
-     * @throws Throws an exception if unable to update the Student or if data validation fails.
+     * @throws         Throws an exception if unable to update the Student or if data validation fails.
      */
     setStudentStatusById(statusId, id) {
         return this.integration.setStudentStatusById(statusId, id);
@@ -71,7 +71,7 @@ class GuardController {
      * @param {string} username The username to find in the database.
      * @param {string} password The password to compare with
      * @returns        The found guard entity.
-     * @throws Throws an exception if unable to retrieve Guard or if the provided password is incorrect.
+     * @throws         Throws an exception if unable to retrieve Guard or if the provided password is incorrect.
      */
     getUser(username, password) {
         return this.integration.getUser(username, password);
@@ -94,6 +94,27 @@ class GuardController {
      */
     getPing() {
         return this.integration.getPing();
+    }
+
+    /**
+     * Called to retrieve a room entity by roomId.
+     *
+     * @param {number} roomId The id of the room to be retrieved.
+     * @returns        The room that matches the provided roomId.
+     */
+    getRoomById(roomId) {
+        return this.integration.getRoomById(roomId);
+    }
+
+    /**
+     * Called to set the seating grid of a room entity.
+     *
+     * @param {number} roomId The id of the room to be modified.
+     * @param {number[]} grid The new grid to be set.
+     * @returns               The updated room entity.
+     */
+    setRoomGridById(roomId, grid) {
+        return this.integration.setRoomGridById(roomId, grid);
     }
 }
 module.exports = GuardController;

@@ -79,5 +79,33 @@ class ValidatorUtil {
         });
         return reason.length ? { error: this.validationErrors(reason) } : student;
     }
+
+    /**
+     * Called to validate the grid type and values.
+     *
+     * @param {number[]} grid The new grid to be set.
+     * @returns          Returns an object containing the validation errors as Object.error or
+     *                   the validated grid.
+     */
+    validateGrid(grid) {
+        let reason = [];
+
+        if (typeof grid !== "object") {
+            reason.push("Invalid grid type; must be array (number[]).");
+        }
+
+        if (grid.length !== 2) {
+            reason.push("Invalid grid; must be array with two values.");
+        }
+
+        for (let i = 0; i < grid.length; i++) {
+            if (typeof grid[i] !== "number") {
+                reason.push("Invalid grid values; must be numbers");
+                break;
+            }
+        }
+
+        return reason.length ? { error: this.validationErrors(reason) } : grid;
+    }
 }
 module.exports = ValidatorUtil;

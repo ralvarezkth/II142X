@@ -383,5 +383,65 @@ class Integration {
             );
         }
     }
+
+    /**
+     * Called to retrieve a room entity by roomId.
+     *
+     * @param {number} roomId The id of the room to be retrieved.
+     * @returns        The room that matches the provided roomId.
+     */
+    async getRoomById(roomId) {
+        const validatedRoomId = this.validator.validateId(roomId);
+        if (validatedRoomId.error) {
+            throw new WError({ name: "DataValidationError", info: { message: validatedRoomId.error } }, "RoomId validation has failed.");
+        }
+        try {
+            return await Room.findOne({ where: { id: validatedRoomId } });
+        } catch (error) {
+            throw new WError({
+                    name: "GetRoomFailedError",
+                    cause: error,
+                    info: {
+                        message: `An error occured when attempting to retrieve the specified room, please try again later.`,
+                    },
+                },
+                "Room retrieval failed."
+            );
+        }
+    }
+
+    /**
+     * Called to set the seating grid of a room entity.
+     *
+     * @param {number} roomId The id of the room to be modified.
+     * @param {number[]} grid The new grid to be set.
+     * @returns               The updated room entity.
+     */
+    async setRoomGridById(roomId, grid) {
+        const validatedRoomId = this.validator.validateId(roomId);
+        const validatedGrid = this.validator.validateGrid(grid);
+        if (validatedRoomId.error) {
+            throw new WError({ name: "DataValidationError", info: { message: validatedRoomId.error } }, "RoomId validation has failed.");
+        }
+        if (validatedGrid.error) {
+            throw new WError({ name: "DataValidationError", info: { message: validatedGrid.error } }, "Grid validation has failed.");
+        }
+        try {
+            return await this.database.transaction(async t => {
+                await Room.update({ grid: validatedGrid }, { where: { id: validatedRoomId }, transaction: t });
+                return await Room.findOne({ where: { id: validatedRoomId }, transaction: t });
+            });
+        } catch (error) {
+            throw new WError({
+                    name: "SetRoomGridFailedError",
+                    cause: error,
+                    info: {
+                        message: `An error occured when attempting to set a new room seating grid, please try again later.`,
+                    },
+                },
+                "Room grid setting failed."
+            );
+        }
+    }
 }
 module.exports = Integration;
