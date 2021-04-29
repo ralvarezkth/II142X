@@ -2,7 +2,6 @@ const express = require("express");
 const { GuardCtrl } = require("../controller");
 const router = express.Router();
 const ValidatorUtil = require("../util/validatorUtil");
-const StudentDTO = require("../model/dto/StudentDTO");
 const VError = require("verror");
 
 /* PUT /api/guard/students/:id/status - Set status of specified student. */

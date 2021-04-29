@@ -42,18 +42,6 @@ class GuardController {
     }
 
     /**
-     * Called to retrive a list of students registered at the specified room.
-     *
-     * @param {number} id The id of the room from which to retrieve students.
-     * @returns        A list of students registered at the specified room.
-     */
-    /*
-                          getStudentsByRoomId(id) {
-                              return this.integration.getStudentsByRoomId(id);
-                          }
-                          */
-
-    /**
      * Called to retrive a list of students registered at the specified session.
      *
      * @param {number} id The id of the session from which to retrieve students.

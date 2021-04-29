@@ -169,34 +169,6 @@ class Integration {
     }
 
     /**
-     * Called to retrive a list of students registered at the specified room.
-     *
-     * @param {number} id The id of the room from which to retrieve students.
-     * @returns A list of students registered at the specified room.
-     */
-    /*
-                                                                                                        async getStudentsByRoomId(roomId) {
-                                                                                                            const validatedRoomId = this.validator.validateId(roomId);
-                                                                                                            if (validatedRoomId.error) {
-                                                                                                                throw new WError({ name: "DataValidationError", info: { message: validatedRoomId.error } }, "Id validation has failed.");
-                                                                                                            }
-                                                                                                            try {
-                                                                                                                return await Student.findAll({ where: { roomId: validatedRoomId } });
-                                                                                                            } catch (error) {
-                                                                                                                throw new WError({
-                                                                                                                        name: "GetStudentsInRoomFailedError",
-                                                                                                                        cause: error,
-                                                                                                                        info: {
-                                                                                                                            message: `An error occured when attempting to retrieve a list of students, please try again later.`,
-                                                                                                                        },
-                                                                                                                    },
-                                                                                                                    "Retrieval of students within specified room failed."
-                                                                                                                );
-                                                                                                            }
-                                                                                                        }
-                                                                                                        */
-
-    /**
      * Called to retrive a list of students registered at the specified session.
      *
      * @param {number} id The id of the session from which to retrieve students.
