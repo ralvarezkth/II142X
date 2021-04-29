@@ -10,6 +10,7 @@ const ValidatorUtil = require("../util/validatorUtil");
 const { WError } = require("verror");
 const StudentDTO = require("../model/dto/StudentDTO");
 const Ping = require("../model/entity/ping");
+const Session = require("../model/entity/session");
 
 class Integration {
     /**
@@ -44,12 +45,17 @@ class Integration {
         Room.createModel(this.database);
         Status.createModel(this.database);
         Ping.createModel(this.database);
+        Session.createModel(this.database);
         UsbClient.hasOne(Student, { foreignKey: "usbId" });
         Student.belongsTo(UsbClient, { foreignKey: "usbId" });
-        Room.hasMany(Student, { foreignKey: "roomId" });
-        Student.belongsTo(Room, { foreignKey: "roomId" });
+        Session.hasMany(Student, { foreignKey: "sessionId" });
+        Student.belongsTo(Session, { foreignKey: "sessionId" });
+        Guard.hasOne(Session, { foreignKey: "guardId" });
+        Session.belongsTo(Guard, { foreignKey: "guardId" });
         Status.hasMany(Student, { foreignKey: "statusId" });
         Student.belongsTo(Status, { foreignKey: "statusId" });
+        Status.hasMany(Session, { foreignKey: "statusId" });
+        Session.belongsTo(Status, { foreignKey: "statusId" });
     }
 
     async initTables() {
@@ -168,22 +174,50 @@ class Integration {
      * @param {number} id The id of the room from which to retrieve students.
      * @returns A list of students registered at the specified room.
      */
-    async getStudentsByRoomId(roomId) {
-        const validatedRoomId = this.validator.validateId(roomId);
-        if (validatedRoomId.error) {
-            throw new WError({ name: "DataValidationError", info: { message: validatedRoomId.error } }, "Id validation has failed.");
+    /*
+                                                                                                        async getStudentsByRoomId(roomId) {
+                                                                                                            const validatedRoomId = this.validator.validateId(roomId);
+                                                                                                            if (validatedRoomId.error) {
+                                                                                                                throw new WError({ name: "DataValidationError", info: { message: validatedRoomId.error } }, "Id validation has failed.");
+                                                                                                            }
+                                                                                                            try {
+                                                                                                                return await Student.findAll({ where: { roomId: validatedRoomId } });
+                                                                                                            } catch (error) {
+                                                                                                                throw new WError({
+                                                                                                                        name: "GetStudentsInRoomFailedError",
+                                                                                                                        cause: error,
+                                                                                                                        info: {
+                                                                                                                            message: `An error occured when attempting to retrieve a list of students, please try again later.`,
+                                                                                                                        },
+                                                                                                                    },
+                                                                                                                    "Retrieval of students within specified room failed."
+                                                                                                                );
+                                                                                                            }
+                                                                                                        }
+                                                                                                        */
+
+    /**
+     * Called to retrive a list of students registered at the specified session.
+     *
+     * @param {number} id The id of the session from which to retrieve students.
+     * @returns A list of students registered at the specified session.
+     */
+    async getStudentsBySessionId(sessionId) {
+        const validatedSessionId = this.validator.validateId(sessionId);
+        if (validatedSessionId.error) {
+            throw new WError({ name: "DataValidationError", info: { message: validatedSessionId.error } }, "Id validation has failed.");
         }
         try {
-            return await Student.findAll({ where: { roomId: validatedRoomId } });
+            return await Student.findAll({ where: { sessionId: validatedSessionId } });
         } catch (error) {
             throw new WError({
-                    name: "GetStudentsInRoomFailedError",
+                    name: "GetStudentsInSessionFailedError",
                     cause: error,
                     info: {
                         message: `An error occured when attempting to retrieve a list of students, please try again later.`,
                     },
                 },
-                "Retrieval of students within specified room failed."
+                "Retrieval of students within specified session failed."
             );
         }
     }
@@ -207,6 +241,7 @@ class Integration {
             const user = await Guard.findOne({ where: { username: ValidatedUsername } });
             if (user && user.password) {
                 if (user.password === password) {
+                    user.password = "";
                     return user;
                 }
             }
@@ -258,44 +293,6 @@ class Integration {
                     },
                 },
                 "Student status change failed."
-            );
-        }
-    }
-
-    /**
-     * Called to connect a student by creating a Student entity.
-     * The Student is created with a connection to a specific room and usbId.
-     *
-     * @param {StudentDTO} student A StudentDTO containing the necessary information for creation.
-     * @returns            The created Student entity.
-     */
-    async connectStudent(student) {
-        const validatedStudent = this.validator.validateStudent(student);
-        if (validatedStudent.error) {
-            throw new WError({ name: "DataValidationError", info: { message: validatedStudent.error } }, "Student data validation has failed.");
-        }
-        try {
-            return await Student.create(validatedStudent);
-        } catch (error) {
-            let message = "Technical issues, please try again later.";
-            if (error.name === "SequelizeUniqueConstraintError") {
-                if (error.errors[0].message == "ssn must be unique") {
-                    message = "Student with provided ssn already exists";
-                } else if (error.errors[0].message == "usbId must be unique") {
-                    message = `Usb with id: ${validatedStudent.usbId} has been registered by another student`;
-                }
-            } else if (error.name === "SequelizeForeignKeyConstraintError") {
-                message = error.parent.detail.substring(4, error.parent.detail.lastIndexOf(")") + 1) + " does not exist.";
-            }
-
-            throw new WError({
-                    name: "ConnectStudentFailedError",
-                    cause: error,
-                    info: {
-                        message: message,
-                    },
-                },
-                "Connection failed!"
             );
         }
     }
@@ -440,6 +437,135 @@ class Integration {
                     },
                 },
                 "Room grid setting failed."
+            );
+        }
+    }
+
+    /**
+     * Called to create a session with a specified guard and seating grid.
+     *
+     * @param {number} guardId The id of the guard responsible for the session.
+     * @param {number[]} grid  The seating grid for the session.
+     * @returns                The created session.
+     */
+    async createSession(guardId, grid, usbIds) {
+        const validatedGuardId = this.validator.validateId(guardId);
+        if (validatedGuardId.error) {
+            throw new WError({ name: "DataValidationError", info: { message: validatedGuardId.error } }, "Guard id validation has failed.");
+        }
+        //TODO: validate grid
+        const toBeValidatedGrid = grid;
+        //TODO: validate usbIds
+        const toBeValidatedUsbIds = usbIds;
+        if (toBeValidatedGrid.error) {
+            throw new WError({ name: "DataValidationError", info: { message: toBeValidatedGrid.error } }, "Grid validation has failed.");
+        }
+        if (toBeValidatedUsbIds.error) {
+            throw new WError({ name: "DataValidationError", info: { message: toBeValidatedUsbIds.error } }, "Array of usbId validation has failed.");
+        }
+        try {
+            let foundSession = await Session.findOne({ where: { guardId: validatedGuardId, statusId: 1 } });
+            if (foundSession) {
+                await Session.update({ statusId: 2 }, { where: { guardId: validatedGuardId } });
+            }
+            return await this.database.transaction(async t => {
+                const newSession = await Session.create({ guardId: validatedGuardId, grid: toBeValidatedGrid, statusId: 1 });
+                for (let i = 0; i < toBeValidatedUsbIds.length; i++) {
+                    const foundStudent = await Student.findOne({ where: { usbId: toBeValidatedUsbIds[i], sessionId: newSession.id }, transaction: t });
+                    if (!foundStudent) {
+                        await Student.create(new StudentDTO(null, toBeValidatedUsbIds[i], newSession.id, 1, 1), { transaction: t });
+                    }
+                }
+                return await Session.findByPk(newSession.id, { transaction: t });
+            });
+        } catch (error) {
+            console.log(error);
+            let message = "Technical issues, please try again later.";
+            if (error.name === "SequelizeForeignKeyConstraintError") {
+                message = error.parent.detail.substring(4, error.parent.detail.lastIndexOf(")") + 1) + " does not exist.";
+            }
+            throw new WError({
+                    name: "CreateSessionFailedError",
+                    cause: error,
+                    info: {
+                        message: message,
+                    },
+                },
+                "Session creation failed!"
+            );
+        }
+    }
+
+    /**
+     * Called to retrieve a session by guard id.
+     *
+     * @param {number} guardId The id of the guard.
+     * @returns        The session that matches the provided guard id.
+     */
+    async getSessionByGuardId(guardId) {
+        const validatedGuardId = this.validator.validateId(guardId);
+        if (validatedGuardId.error) {
+            throw new WError({ name: "DataValidationError", info: { message: validatedGuardId.error } }, "Guard id validation has failed.");
+        }
+        try {
+            return await Session.findOne({ where: { guardId: validatedGuardId, statusId: 1 } });
+        } catch (error) {
+            throw new WError({
+                    name: "GetSessionFailedError",
+                    cause: error,
+                    info: {
+                        message: `An error occured when attempting to retrieve the specified session, please try again later.`,
+                    },
+                },
+                "Session retrieval failed."
+            );
+        }
+    }
+
+    /**
+     * Called to add a student to a specified session.
+     *
+     * @param {number} sessionId The id of the session.
+     * @param {number} usbId The usb id of the student.
+     * @returns        The modified session.
+     */
+    async addStudentToSession(sessionId, usbId) {
+        const validatedSessionId = this.validator.validateId(sessionId);
+        const validatedUsbId = this.validator.validateId(usbId);
+        if (validatedSessionId.error) {
+            throw new WError({ name: "DataValidationError", info: { message: validatedSessionId.error } }, "Session id validation has failed.");
+        }
+        if (validatedUsbId.error) {
+            throw new WError({ name: "DataValidationError", info: { message: validatedUsbId.error } }, "Usb id validation has failed.");
+        }
+        try {
+            return await this.database.transaction(async t => {
+                const session = await Session.findOne({ where: { id: validatedSessionId }, transaction: t });
+                if (session === null) {
+                    throw new WError({ name: "SessionNotFoundError", info: { message: "Add student failed: Session does not exist." } }, "Add student to session failed.");
+                }
+                await Student.create(new StudentDTO(null, validatedUsbId, validatedSessionId, 1, 1), { transaction: t });
+                return await Session.findOne({ where: { id: validatedSessionId }, transaction: t });
+            });
+        } catch (error) {
+            let message = "Technical issues, please try again later.";
+            if (error.name === "SequelizeUniqueConstraintError") {
+                if (error.errors[0].message == "usbId must be unique") {
+                    message = `Add student failed: Usb with id: ${validatedUsbId} has been registered by another student`;
+                }
+            } else if (error.name === "SequelizeForeignKeyConstraintError") {
+                message = `Add student failed: ${error.parent.detail.substring(4, error.parent.detail.lastIndexOf(")") + 1)} does not exist.`;
+            } else if (error.name === "SessionNotFoundError") {
+                message = error.jse_info.message;
+            }
+            throw new WError({
+                    name: "AddStudentToSessionFailedError",
+                    cause: error,
+                    info: {
+                        message,
+                    },
+                },
+                "Adding student to session failed."
             );
         }
     }

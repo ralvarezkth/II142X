@@ -1,0 +1,25 @@
+ - ändra student-> roomId till student -> sessionId
+ - uppdatera StudentDTO för sessionId fältet.
+ - lägg till session entity
+ - Status: statusId 1 = aktiv, statusId 2 = inaktiv
+ - Vid login returneras ett tomt lösenordsfält.
+ - UsbId kan vara registrerade på flera sessions samtidigt.
+ - lägg till endpoint: GET /api/guard/:id/session/students - Get all students in specified session.
+ - lägg till endpoint: PUT /api/guard/:id/session/add - Add student to specified session. Usb id is sent in the request body.
+   förväntad input req.body: 
+   {
+       "usbId": 1
+   } 
+
+ - lägg till endpoint: GET /api/guard/:id/session - Get session by guard id.
+ - lägg till endpoint: POST /api/guard/:id/session/create - Create new session
+   förväntad input req.body: 
+   {
+       "guardId": 1,
+       "grid": 
+       {
+           "rows": 6,
+           "cols": 6
+       },
+       "usbIds": [1,2,3]
+   } 

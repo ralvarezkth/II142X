@@ -2,15 +2,15 @@
 
 const { Sequelize, DataTypes, Model } = require("sequelize");
 
-class Student extends Model {
+class Session extends Model {
     /**
-     * Initializes the Student model.
+     * Initializes the Session model.
      *
      * @param {Sequelize} sequelize A sequelize connection instance object.
-     * @return            A sequelize model describing the Student entity.
+     * @return            A sequelize model describing the Session entity.
      */
     static createModel(sequelize) {
-        Student.init({
+        Session.init({
             id: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
@@ -18,30 +18,26 @@ class Student extends Model {
                 autoIncrement: true,
                 primaryKey: true,
             },
-            usbId: {
+            guardId: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
             },
-            sessionId: {
-                type: DataTypes.INTEGER,
+            grid: {
+                type: DataTypes.ARRAY(DataTypes.INTEGER),
                 allowNull: false,
             },
             statusId: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
             },
-            ping: {
-                type: DataTypes.INTEGER,
-                allowNull: false,
-            },
         }, {
             sequelize,
-            modelName: "Student",
+            modelName: "Session",
             freezeTableName: true,
             paranoid: false,
         });
 
-        return Student;
+        return Session;
     }
 }
-module.exports = Student;
+module.exports = Session;

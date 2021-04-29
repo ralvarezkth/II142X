@@ -47,18 +47,70 @@ router.get("/students", function(req, res) {
         });
 });
 
-/* GET /api/guard/rooms/:id/students - Get all students in specified room. */
-router.get("/rooms/:id/students", function(req, res) {
+/* GET /api/guard/:id/session/students - Get all students in specified session. */
+router.get("/:id/session/students", function(req, res) {
     const validator = new ValidatorUtil();
     const validatedId = validator.validateId(parseInt(req.params.id));
     if (!validatedId.error) {
-        getStudentsByRoomId(validatedId)
+        getStudentsBySessionId(validatedId)
             .then(students => res.json(students))
             .catch(error => {
                 res.status(500).json({ error: VError.info(error).message });
             });
     } else {
         res.status(400).json({ error: validatedId.error });
+    }
+});
+
+/* PUT /api/guard/:id/session/add - Add student to specified session. Usb id is sent in the request body. */
+router.put("/:id/session/add", function(req, res) {
+    const validator = new ValidatorUtil();
+    const validatedSessionId = validator.validateId(parseInt(req.params.id));
+    const validatedUsbId = validator.validateId(req.body.usbId);
+    if (!validatedSessionId.error && !validatedUsbId.error) {
+        addStudentToSession(validatedSessionId, validatedUsbId)
+            .then(session => res.json(session))
+            .catch(error => {
+                res.status(500).json({ error: VError.info(error).message });
+            });
+    } else if (validatedSessionId.error) {
+        res.status(400).json({ error: validatedSessionId.error });
+    } else if (validatedUsbId.error) {
+        res.status(400).json({ error: validatedUsbId.error });
+    }
+});
+
+/* POST /api/guard/:id/session/create - Create new session. */
+router.post("/:id/session/create", function(req, res) {
+    const validator = new ValidatorUtil();
+    const validatedGuardId = validator.validateId(req.body.guardId);
+    //TODO: validate req.body.grid
+    const grid = [req.body.grid.rows, req.body.grid.cols];
+    //TODO: validate array of ids
+    const usbIds = req.body.usbIds;
+    if (!validatedGuardId.error) {
+        createSession(validatedGuardId, grid, usbIds)
+            .then(session => res.json(session))
+            .catch(error => {
+                res.status(500).json({ error: VError.info(error).message });
+            });
+    } else {
+        res.status(400).json({ error: validatedGuardId.error });
+    }
+});
+
+/* GET /api/guard/:id/session - Get session by guard id. */
+router.get("/:id/session", function(req, res) {
+    const validator = new ValidatorUtil();
+    const validatedGuardId = validator.validateId(parseInt(req.params.id));
+    if (!validatedGuardId.error) {
+        getSessionByGuardId(validatedGuardId)
+            .then(session => res.json(session))
+            .catch(error => {
+                res.status(500).json({ error: VError.info(error).message });
+            });
+    } else {
+        res.status(400).json({ error: validatedGuardId.error });
     }
 });
 
@@ -104,23 +156,6 @@ router.get("/rooms", function(req, res) {
         });
 });
 
-/* POST /api/guard/student/connect - Create student. */
-router.post("/connect", function(req, res) {
-    const validator = new ValidatorUtil();
-    const validatedStudent = validator.validateStudent(req.body.student);
-    if (!validatedStudent.error) {
-        const { usbId, roomId, statusId } = validatedStudent;
-        const newStudent = new StudentDTO(null, usbId, roomId, statusId, 1);
-        connectStudent(newStudent)
-            .then(data => res.json(data))
-            .catch(error => {
-                res.status(500).json({ error: VError.info(error).message });
-            });
-    } else {
-        res.status(400).json({ error: validatedStudent.error });
-    }
-});
-
 /* GET /api/guard/ping - Get current randomized ping value. */
 router.get("/ping", function(req, res) {
     getPing()
@@ -146,12 +181,8 @@ async function getRooms() {
     return await GuardCtrl.getRooms();
 }
 
-async function getStudentsByRoomId(id) {
-    return await GuardCtrl.getStudentsByRoomId(id);
-}
-
-async function connectStudent(student) {
-    return await GuardCtrl.connectStudent(student);
+async function getStudentsBySessionId(id) {
+    return await GuardCtrl.getStudentsBySessionId(id);
 }
 
 async function getPing() {
@@ -165,4 +196,17 @@ async function getRoomById(roomId) {
 async function setRoomGridById(roomId, grid) {
     return await GuardCtrl.setRoomGridById(roomId, grid);
 }
+
+async function createSession(guardId, grid, usbIds) {
+    return await GuardCtrl.createSession(guardId, grid, usbIds);
+}
+
+async function getSessionByGuardId(guardId) {
+    return await GuardCtrl.getSessionByGuardId(guardId);
+}
+
+async function addStudentToSession(sessionId, usbId) {
+    return await GuardCtrl.addStudentToSession(sessionId, usbId);
+}
+
 module.exports = router;

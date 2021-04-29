@@ -47,8 +47,20 @@ class GuardController {
      * @param {number} id The id of the room from which to retrieve students.
      * @returns        A list of students registered at the specified room.
      */
-    getStudentsByRoomId(id) {
-        return this.integration.getStudentsByRoomId(id);
+    /*
+                          getStudentsByRoomId(id) {
+                              return this.integration.getStudentsByRoomId(id);
+                          }
+                          */
+
+    /**
+     * Called to retrive a list of students registered at the specified session.
+     *
+     * @param {number} id The id of the session from which to retrieve students.
+     * @returns        A list of students registered at the specified session.
+     */
+    getStudentsBySessionId(id) {
+        return this.integration.getStudentsBySessionId(id);
     }
 
     /**
@@ -75,16 +87,6 @@ class GuardController {
      */
     getUser(username, password) {
         return this.integration.getUser(username, password);
-    }
-
-    /**
-     * Called to connect a student to a specific room and usb stick.
-     *
-     * @param {StudentDTO} student A StudentDTO containing information about the connecting student.
-     * @returns            The connected Student entity.
-     */
-    connectStudent(student) {
-        return this.integration.connectStudent(student);
     }
 
     /**
@@ -115,6 +117,38 @@ class GuardController {
      */
     setRoomGridById(roomId, grid) {
         return this.integration.setRoomGridById(roomId, grid);
+    }
+
+    /**
+     * Called to create a session with a specified guard and seating grid.
+     *
+     * @param {number}   guardId The id of the guard responsible for the session.
+     * @param {number[]} grid The seating grid for the session.
+     * @returns          The created session.
+     */
+    createSession(guardId, grid, usbIds) {
+        return this.integration.createSession(guardId, grid, usbIds);
+    }
+
+    /**
+     * Called to retrieve a session by guard id.
+     *
+     * @param {number} guardId The id of the guard.
+     * @returns        The session that matches the provided guard id.
+     */
+    getSessionByGuardId(guardId) {
+        return this.integration.getSessionByGuardId(guardId);
+    }
+
+    /**
+     * Called to add a student to a specified session.
+     *
+     * @param {number} sessionId The id of the session.
+     * @param {number} usbId The usb id of the student.
+     * @returns        The modified session.
+     */
+    addStudentToSession(sessionId, usbId) {
+        return this.integration.addStudentToSession(sessionId, usbId);
     }
 }
 module.exports = GuardController;
