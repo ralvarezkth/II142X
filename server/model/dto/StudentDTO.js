@@ -10,12 +10,13 @@ class StudentDTO {
      * @param {number} statusId The id of the student's current status.
      * @param {number} ping A random number used for incrementation.
      */
-    constructor(id, usbId, sessionId, statusId, ping) {
+    constructor(id, usbId, sessionId, statusId, ping, position) {
         this.id = id;
         this.usbId = usbId;
         this.sessionId = sessionId;
         this.statusId = statusId;
         this.ping = ping;
+        this.position = position;
     }
 }
 module.exports = StudentDTO;

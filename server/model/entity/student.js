@@ -34,6 +34,10 @@ class Student extends Model {
                 type: DataTypes.INTEGER,
                 allowNull: false,
             },
+            position: {
+                type: DataTypes.ARRAY(DataTypes.INTEGER),
+                allowNull: false,
+            },
         }, {
             sequelize,
             modelName: "Student",

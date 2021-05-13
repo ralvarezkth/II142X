@@ -11,7 +11,7 @@ router.put("/students/:id/status/:statusId", function(req, res) {
     const validatedStatusId = validator.validateId(parseInt(req.params.statusId));
     if (!validatedId.error && !validatedStatusId.error) {
         setStudentStatusById(validatedStatusId, validatedId)
-            .then(status => res.json(status))
+            .then(updatedStudent => res.json(updatedStudent))
             .catch(error => {
                 res.status(500).json({ error: VError.info(error).message });
             });
@@ -46,8 +46,23 @@ router.get("/students", function(req, res) {
         });
 });
 
-/* GET /api/guard/:id/session/students - Get all students in specified session. */
-router.get("/:id/session/students", function(req, res) {
+/* GET /api/guard/sessions/:id/students - Get all active students in specified session. */
+router.get("/sessions/:id/students/active", function(req, res) {
+    const validator = new ValidatorUtil();
+    const validatedId = validator.validateId(parseInt(req.params.id));
+    if (!validatedId.error) {
+        getActiveStudentsBySessionId(validatedId)
+            .then(students => res.json(students))
+            .catch(error => {
+                res.status(500).json({ error: VError.info(error).message });
+            });
+    } else {
+        res.status(400).json({ error: validatedId.error });
+    }
+});
+
+/* GET /api/guard/sessions/:id/students - Get all students in specified session. */
+router.get("/sessions/:id/students", function(req, res) {
     const validator = new ValidatorUtil();
     const validatedId = validator.validateId(parseInt(req.params.id));
     if (!validatedId.error) {
@@ -61,13 +76,41 @@ router.get("/:id/session/students", function(req, res) {
     }
 });
 
-/* PUT /api/guard/:id/session/add - Add student to specified session. Usb id is sent in the request body. */
-router.put("/:id/session/add", function(req, res) {
+/* DELETE /api/guard/sessions/students - Delete student in specified session. */
+router.delete("/sessions/:id/students/:usbId", function(req, res) {
     const validator = new ValidatorUtil();
     const validatedSessionId = validator.validateId(parseInt(req.params.id));
-    const validatedUsbId = validator.validateId(req.body.usbId);
+    const validatedUsbId = validator.validateId(parseInt(req.params.usbId));
     if (!validatedSessionId.error && !validatedUsbId.error) {
-        addStudentToSession(validatedSessionId, validatedUsbId)
+        deleteStudentsBySessionIdAndUsbId(validatedSessionId, validatedUsbId)
+            .then(deletedRows => res.json(deletedRows))
+            .catch(error => {
+                res.status(500).json({ error: VError.info(error).message });
+            });
+    } else if (validatedSessionId.error) {
+        res.status(400).json({ error: validatedSessionId.error });
+    } else if (validatedUsbId.error) {
+        res.status(400).json({ error: validatedUsbId.error });
+    }
+});
+
+/* POST /api/guard/sessions/:id/students - Add student to specified session. */
+/* request body example:
+        {
+            "student": {
+                "usbId": 3,
+                "pos": [1,0]
+            }
+        }
+*/
+router.post("/sessions/:id/students", function(req, res) {
+    // FIXME: validations
+    const validator = new ValidatorUtil();
+    const validatedSessionId = validator.validateId(parseInt(req.params.id));
+    const student = req.body.student;
+    const validatedUsbId = validator.validateId(student.usbId);
+    if (!validatedSessionId.error && !validatedUsbId.error) {
+        addStudentToSession(validatedSessionId, student)
             .then(session => res.json(session))
             .catch(error => {
                 res.status(500).json({ error: VError.info(error).message });
@@ -79,17 +122,32 @@ router.put("/:id/session/add", function(req, res) {
     }
 });
 
-/* POST /api/guard/:id/session/create - Create new session. */
-router.post("/:id/session/create", function(req, res) {
+/* POST /api/guard/:id/session - Create new session. */
+/* request body example:
+        {
+            "session": {
+                "grid": {
+                    "rows": 2,
+                    "cols": 2
+                },
+                "students": [
+                    {"usbId": 4, "pos": [0,0]},
+                    {"usbId": 5, "pos": [0,1]},
+                    {"usbId": 6, "pos": [1,0]}
+                ]
+            }
+        }
+*/
+router.post("/:id/session", function(req, res) {
+    // FIXME: validation
     const validator = new ValidatorUtil();
-    const validatedGuardId = validator.validateId(req.body.guardId);
-    //TODO: validate req.body.grid
-    const grid = [req.body.grid.rows, req.body.grid.cols];
-    //TODO: validate array of ids
-    const usbIds = req.body.usbIds;
+    const validatedGuardId = validator.validateId(parseInt(req.params.id));
+    const session = req.body.session;
+    const grid = [session.grid.rows, session.grid.cols];
+    const students = session.students;
     if (!validatedGuardId.error) {
-        createSession(validatedGuardId, grid, usbIds)
-            .then(session => res.json(session))
+        createSession(validatedGuardId, grid, students)
+            .then(createdSession => res.json(createdSession))
             .catch(error => {
                 res.status(500).json({ error: VError.info(error).message });
             });
@@ -180,6 +238,10 @@ async function getRooms() {
     return await GuardCtrl.getRooms();
 }
 
+async function getActiveStudentsBySessionId(id) {
+    return await GuardCtrl.getActiveStudentsBySessionId(id);
+}
+
 async function getStudentsBySessionId(id) {
     return await GuardCtrl.getStudentsBySessionId(id);
 }
@@ -196,16 +258,20 @@ async function setRoomGridById(roomId, grid) {
     return await GuardCtrl.setRoomGridById(roomId, grid);
 }
 
-async function createSession(guardId, grid, usbIds) {
-    return await GuardCtrl.createSession(guardId, grid, usbIds);
+async function createSession(guardId, grid, students) {
+    return await GuardCtrl.createSession(guardId, grid, students);
 }
 
 async function getSessionByGuardId(guardId) {
     return await GuardCtrl.getSessionByGuardId(guardId);
 }
 
-async function addStudentToSession(sessionId, usbId) {
-    return await GuardCtrl.addStudentToSession(sessionId, usbId);
+async function addStudentToSession(sessionId, student) {
+    return await GuardCtrl.addStudentToSession(sessionId, student);
+}
+
+async function deleteStudentsBySessionIdAndUsbId(sessionId, usbId) {
+    return await GuardCtrl.deleteStudentsBySessionIdAndUsbId(sessionId, usbId);
 }
 
 module.exports = router;

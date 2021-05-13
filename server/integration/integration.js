@@ -169,6 +169,32 @@ class Integration {
     }
 
     /**
+     * Called to retrive a list of active students registered at the specified session.
+     *
+     * @param {number} id The id of the session from which to retrieve active students.
+     * @returns        A list of active students registered at the specified session.
+     */
+    async getActiveStudentsBySessionId(sessionId) {
+        const validatedSessionId = this.validator.validateId(sessionId);
+        if (validatedSessionId.error) {
+            throw new WError({ name: "DataValidationError", info: { message: validatedSessionId.error } }, "Id validation has failed.");
+        }
+        try {
+            return await Student.findAll({ where: { sessionId: validatedSessionId, statusId: [1, 3] } });
+        } catch (error) {
+            throw new WError({
+                    name: "GetStudentsInSessionFailedError",
+                    cause: error,
+                    info: {
+                        message: `An error occured when attempting to retrieve a list of students, please try again later.`,
+                    },
+                },
+                "Retrieval of students within specified session failed."
+            );
+        }
+    }
+
+    /**
      * Called to retrive a list of students registered at the specified session.
      *
      * @param {number} id The id of the session from which to retrieve students.
@@ -253,15 +279,19 @@ class Integration {
         }
         try {
             return await this.database.transaction(async t => {
-                await Student.update({ validatedStatusId }, { where: { id: validatedId }, transaction: t });
+                await Student.update({ statusId: validatedStatusId }, { where: { id: validatedId }, transaction: t });
                 return await Student.findOne({ where: { id: validatedId }, transaction: t });
             });
         } catch (error) {
+            let message = "An error occured when attempting to change the status, please try again later.";
+            if (error.name === "SequelizeForeignKeyConstraintError") {
+                message = `Student status change failed: StatusId (${validatedStatusId}) does not exist`;
+            }
             throw new WError({
                     name: "StudentStatusChangeFailedError",
                     cause: error,
                     info: {
-                        message: `An error occured when attempting to change the status, please try again later.`,
+                        message,
                     },
                 },
                 "Student status change failed."
@@ -414,26 +444,25 @@ class Integration {
     }
 
     /**
-     * Called to create a session with a specified guard and seating grid.
+     * Called to create a session with a specified guard, seating grid and group of students.
      *
-     * @param {number} guardId The id of the guard responsible for the session.
-     * @param {number[]} grid  The seating grid for the session.
-     * @returns                The created session.
+     * @param {number}   guardId The id of the guard responsible for the session.
+     * @param {number[]} grid The seating grid for the session.
+     * @param {object[]} students The group of students.
+     * @returns          The created session.
      */
-    async createSession(guardId, grid, usbIds) {
+    async createSession(guardId, grid, students) {
+        //FIXME: validations
         const validatedGuardId = this.validator.validateId(guardId);
         if (validatedGuardId.error) {
             throw new WError({ name: "DataValidationError", info: { message: validatedGuardId.error } }, "Guard id validation has failed.");
         }
-        //TODO: validate grid
         const toBeValidatedGrid = grid;
-        //TODO: validate usbIds
-        const toBeValidatedUsbIds = usbIds;
         if (toBeValidatedGrid.error) {
             throw new WError({ name: "DataValidationError", info: { message: toBeValidatedGrid.error } }, "Grid validation has failed.");
         }
-        if (toBeValidatedUsbIds.error) {
-            throw new WError({ name: "DataValidationError", info: { message: toBeValidatedUsbIds.error } }, "Array of usbId validation has failed.");
+        if (students.error) {
+            throw new WError({ name: "DataValidationError", info: { message: students.error } }, "Array of students validation has failed.");
         }
         try {
             let foundSession = await Session.findOne({ where: { guardId: validatedGuardId, statusId: 1 } });
@@ -442,16 +471,15 @@ class Integration {
             }
             return await this.database.transaction(async t => {
                 const newSession = await Session.create({ guardId: validatedGuardId, grid: toBeValidatedGrid, statusId: 1 });
-                for (let i = 0; i < toBeValidatedUsbIds.length; i++) {
-                    const foundStudent = await Student.findOne({ where: { usbId: toBeValidatedUsbIds[i], sessionId: newSession.id }, transaction: t });
+                for (let i = 0; i < students.length; i++) {
+                    const foundStudent = await Student.findOne({ where: { usbId: students[i].usbId, sessionId: newSession.id }, transaction: t });
                     if (!foundStudent) {
-                        await Student.create(new StudentDTO(null, toBeValidatedUsbIds[i], newSession.id, 1, 1), { transaction: t });
+                        await Student.create(new StudentDTO(null, students[i].usbId, newSession.id, 1, 1, students[i].pos), { transaction: t });
                     }
                 }
                 return await Session.findByPk(newSession.id, { transaction: t });
             });
         } catch (error) {
-            console.log(error);
             let message = "Technical issues, please try again later.";
             if (error.name === "SequelizeForeignKeyConstraintError") {
                 message = error.parent.detail.substring(4, error.parent.detail.lastIndexOf(")") + 1) + " does not exist.";
@@ -501,9 +529,11 @@ class Integration {
      * @param {number} usbId The usb id of the student.
      * @returns        The modified session.
      */
-    async addStudentToSession(sessionId, usbId) {
+    async addStudentToSession(sessionId, student) {
+        // FIXME: validations
         const validatedSessionId = this.validator.validateId(sessionId);
-        const validatedUsbId = this.validator.validateId(usbId);
+        const validatedUsbId = this.validator.validateId(student.usbId);
+        const position = student.pos;
         if (validatedSessionId.error) {
             throw new WError({ name: "DataValidationError", info: { message: validatedSessionId.error } }, "Session id validation has failed.");
         }
@@ -516,7 +546,15 @@ class Integration {
                 if (session === null) {
                     throw new WError({ name: "SessionNotFoundError", info: { message: "Add student failed: Session does not exist." } }, "Add student to session failed.");
                 }
-                await Student.create(new StudentDTO(null, validatedUsbId, validatedSessionId, 1, 1), { transaction: t });
+                const studentAtPosition = await Student.findOne({ where: { sessionId: validatedSessionId, position }, transaction: t });
+                if (studentAtPosition !== null) {
+                    throw new WError({ name: "SeatTakenError", info: { message: "Add student failed: Seat taken." } }, "Add student to session failed.");
+                }
+                const existingStudent = await Student.findOne({ where: { usbId: validatedUsbId }, transaction: t });
+                if (existingStudent !== null) {
+                    throw new WError({ name: "StudentExistsError", info: { message: `Add student failed: Student (usbId: ${validatedUsbId}) already registered at session.` } }, "Add student to session failed.");
+                }
+                await Student.create(new StudentDTO(null, validatedUsbId, validatedSessionId, 1, 1, position), { transaction: t });
                 return await Session.findOne({ where: { id: validatedSessionId }, transaction: t });
             });
         } catch (error) {
@@ -527,7 +565,7 @@ class Integration {
                 }
             } else if (error.name === "SequelizeForeignKeyConstraintError") {
                 message = `Add student failed: ${error.parent.detail.substring(4, error.parent.detail.lastIndexOf(")") + 1)} does not exist.`;
-            } else if (error.name === "SessionNotFoundError") {
+            } else if (error.name === "SessionNotFoundError" || error.name === "SeatTakenError" || error.name === "StudentExistsError") {
                 message = error.jse_info.message;
             }
             throw new WError({
@@ -538,6 +576,37 @@ class Integration {
                     },
                 },
                 "Adding student to session failed."
+            );
+        }
+    }
+
+    /**
+     * Called to delete a student from a session.
+     *
+     * @param {number} sessionId The id of the session.
+     * @param {number} usbId The usb id of the student.
+     * @returns        The deleted student.
+     */
+    async deleteStudentsBySessionIdAndUsbId(sessionId, usbId) {
+        const validatedSessionId = this.validator.validateId(sessionId);
+        const validatedUsbId = this.validator.validateId(usbId);
+        if (validatedSessionId.error) {
+            throw new WError({ name: "DataValidationError", info: { message: validatedSessionId.error } }, "Session id validation has failed.");
+        }
+        if (validatedUsbId.error) {
+            throw new WError({ name: "DataValidationError", info: { message: validatedUsbId.error } }, "Usb id validation has failed.");
+        }
+        try {
+            return await Student.destroy({ where: { usbId: validatedUsbId, sessionId: validatedSessionId } });
+        } catch (error) {
+            throw new WError({
+                    name: "DeleteStudentFailedError",
+                    cause: error,
+                    info: {
+                        message: `An error occured when attempting to delete the specified student from the session, please try again later.`,
+                    },
+                },
+                "Student deletion failed."
             );
         }
     }
