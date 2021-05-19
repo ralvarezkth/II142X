@@ -268,21 +268,32 @@ class Integration {
      * @returns        The updated Student entity.
      * @throws Throws an exception if unable to update the Student or if data validation fails.
      */
-    async setStudentStatusById(statusId, id) {
+    async setStatusOfStudentInSession(sessionId, usbId, statusId) {
+        const validatedSessionId = this.validator.validateId(sessionId);
+        const validatedUsbId = this.validator.validateId(usbId);
         const validatedStatusId = this.validator.validateId(statusId);
-        const validatedId = this.validator.validateId(id);
+        if (validatedSessionId.error) {
+            throw new WError({ name: "DataValidationError", info: { message: validatedSessionId.error } }, "Session id validation has failed.");
+        }
+        if (validatedUsbId.error) {
+            throw new WError({ name: "DataValidationError", info: { message: validatedUsbId.error } }, "Usb id validation has failed.");
+        }
         if (validatedStatusId.error) {
             throw new WError({ name: "DataValidationError", info: { message: validatedStatusId.error } }, "Status id validation has failed.");
         }
-        if (validatedId.error) {
-            throw new WError({ name: "DataValidationError", info: { message: validatedId.error } }, "Id validation has failed.");
-        }
         try {
             return await this.database.transaction(async t => {
-                await Student.update({ statusId: validatedStatusId }, { where: { id: validatedId }, transaction: t });
-                return await Student.findOne({ where: { id: validatedId }, transaction: t });
+                const session = await Session.findOne({ where: { id: validatedSessionId }, transaction: t });
+                if (session === null) {
+                    throw new WError({ name: "SessionNotFoundError", info: { message: "Student status change failed: Session does not exist." } }, "Student status change failed.");
+                }
+                await Student.update({ statusId: validatedStatusId }, { where: { usbId: validatedUsbId, sessionId: validatedSessionId }, transaction: t });
+                return await Student.findOne({ where: { usbId: validatedUsbId, sessionId: validatedSessionId }, transaction: t });
             });
         } catch (error) {
+            if (error.name === "SessionNotFoundError") {
+                throw error;
+            }
             let message = "An error occured when attempting to change the status, please try again later.";
             if (error.name === "SequelizeForeignKeyConstraintError") {
                 message = `Student status change failed: StatusId (${validatedStatusId}) does not exist`;
@@ -471,10 +482,10 @@ class Integration {
             }
             return await this.database.transaction(async t => {
                 const newSession = await Session.create({ guardId: validatedGuardId, grid: toBeValidatedGrid, statusId: 1 });
-                for (let i = 0; i < students.length; i++) {
-                    const foundStudent = await Student.findOne({ where: { usbId: students[i].usbId, sessionId: newSession.id }, transaction: t });
+                for (const student of students) {
+                    const foundStudent = await Student.findOne({ where: { usbId: student.usbId, sessionId: newSession.id }, transaction: t });
                     if (!foundStudent) {
-                        await Student.create(new StudentDTO(null, students[i].usbId, newSession.id, 1, 1, students[i].pos), { transaction: t });
+                        await Student.create(new StudentDTO(null, student.usbId, newSession.id, 1, 1, student.pos), { transaction: t });
                     }
                 }
                 return await Session.findByPk(newSession.id, { transaction: t });
@@ -546,14 +557,6 @@ class Integration {
                 if (session === null) {
                     throw new WError({ name: "SessionNotFoundError", info: { message: "Add student failed: Session does not exist." } }, "Add student to session failed.");
                 }
-                const studentAtPosition = await Student.findOne({ where: { sessionId: validatedSessionId, position }, transaction: t });
-                if (studentAtPosition !== null) {
-                    throw new WError({ name: "SeatTakenError", info: { message: "Add student failed: Seat taken." } }, "Add student to session failed.");
-                }
-                const existingStudent = await Student.findOne({ where: { usbId: validatedUsbId }, transaction: t });
-                if (existingStudent !== null) {
-                    throw new WError({ name: "StudentExistsError", info: { message: `Add student failed: Student (usbId: ${validatedUsbId}) already registered at session.` } }, "Add student to session failed.");
-                }
                 await Student.create(new StudentDTO(null, validatedUsbId, validatedSessionId, 1, 1, position), { transaction: t });
                 return await Session.findOne({ where: { id: validatedSessionId }, transaction: t });
             });
@@ -565,7 +568,7 @@ class Integration {
                 }
             } else if (error.name === "SequelizeForeignKeyConstraintError") {
                 message = `Add student failed: ${error.parent.detail.substring(4, error.parent.detail.lastIndexOf(")") + 1)} does not exist.`;
-            } else if (error.name === "SessionNotFoundError" || error.name === "SeatTakenError" || error.name === "StudentExistsError") {
+            } else if (error.name === "SessionNotFoundError") {
                 message = error.jse_info.message;
             }
             throw new WError({
@@ -587,7 +590,7 @@ class Integration {
      * @param {number} usbId The usb id of the student.
      * @returns        The deleted student.
      */
-    async deleteStudentsBySessionIdAndUsbId(sessionId, usbId) {
+    async RemoveStudentInSession(sessionId, usbId) {
         const validatedSessionId = this.validator.validateId(sessionId);
         const validatedUsbId = this.validator.validateId(usbId);
         if (validatedSessionId.error) {

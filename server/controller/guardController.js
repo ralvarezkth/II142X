@@ -62,15 +62,16 @@ class GuardController {
     }
 
     /**
-     * Called to change the status of a student entity to the provided status id.
+     * Called to change the status of a student in a session to the provided status id.
      *
+     * @param {number} sessionId The id of the session.
+     * @param {number} usbId The usb id of the student.
      * @param {number} statusId The statusId to change to.
-     * @param {number} id The id of the student entity to modify.
      * @returns        The updated Student entity.
      * @throws         Throws an exception if unable to update the Student or if data validation fails.
      */
-    setStudentStatusById(statusId, id) {
-        return this.integration.setStudentStatusById(statusId, id);
+    setStatusOfStudentInSession(sessionId, usbId, statusId) {
+        return this.integration.setStatusOfStudentInSession(sessionId, usbId, statusId);
     }
 
     /**
@@ -157,8 +158,8 @@ class GuardController {
      * @param {number} usbId The usb id of the student.
      * @returns        The deleted student.
      */
-    deleteStudentsBySessionIdAndUsbId(sessionId, usbId) {
-        return this.integration.deleteStudentsBySessionIdAndUsbId(sessionId, usbId);
+    RemoveStudentInSession(sessionId, usbId) {
+        return this.integration.RemoveStudentInSession(sessionId, usbId);
     }
 }
 module.exports = GuardController;
