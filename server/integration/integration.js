@@ -323,8 +323,8 @@ class Integration {
         }
         try {
             return await this.database.transaction(async t => {
-                await Student.increment("ping", { where: { id: validatedId }, transaction: t });
-                const modifiedStudent = await Student.findOne({ where: { id: validatedId }, transaction: t });
+                await Student.increment("ping", { where: { usbId: validatedId }, transaction: t });
+                const modifiedStudent = await Student.findOne({ where: { usbId: validatedId }, transaction: t });
                 if (!modifiedStudent) {
                     throw new WError({ name: "StudentDoesNotExistError", info: { message: `There is no student with id: ${validatedId} registered` } }, `Student with id: ${validatedId} does not exist.`);
                 }

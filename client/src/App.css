@@ -1,0 +1,290 @@
+.header-feedback, .header-row, .header-box {
+  height: 100%;
+}
+
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.header {
+  background-color: #282c34;
+  min-height: 20vh;
+  height: 20vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.header-feedback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 2 1 0;
+  min-width: 100%;
+}
+
+.header-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  flex: 4 1 0;
+  min-width: 100%;
+}
+
+.header-box {
+  display: flex;
+  flex-direction: column;
+  align-items:  center;
+  justify-content: center;
+  text-align: center;
+  flex: 1 1 0;
+  min-height: 100%;
+}
+
+.header-ctrl {
+  display: flex;
+  flex: 1 1 0;
+  align-items: center;
+  justify-content: space-between;
+  align-self: center;
+}
+
+.main {
+  min-height: 80vh;
+  height: 80vh;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+}
+
+.main-row {
+  display: flex;
+  flex-direction: row;
+  flex: 1 1 0;
+  align-items: stretch;
+  justify-content: center;
+}
+
+.main-box {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  justify-content: center;
+  align-items: center;
+  margin: 10px;
+}
+
+.main-box:first-child {
+  margin-left: 20px;
+}
+
+.main-box:last-child {
+  margin-right: 20px;
+}
+
+.main-sub-box {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  align-self: stretch;
+}
+
+.main-sub-box:first-child {
+  margin-bottom: 1em;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.main-sub-box:last-child {
+  margin-top: 1em;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.seat-button {
+  margin: 0.2em 0;
+  width: 75%;
+  border: 2px solid #282c34;
+  padding: 0.5em;
+  background-color: #fff;
+}
+
+.seat-button:hover {
+  background-color: #CFCFCF;
+}
+
+.control-row {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  align-self: center;
+  justify-content: flex-start;
+  align-items: center;
+  margin: 15px 0;
+}
+
+.control-box {
+  display: flex;
+  flex: 1 1 0;
+  justify-content: center;
+  font-size: 24px;
+  margin: 15px;
+}
+
+.control-box label {
+  display: none;
+}
+
+.control-input {
+  padding: 1em;
+  border: 3px solid #000;
+}
+
+.control-button {
+  padding: 0.75em;
+  width: 100%;
+  border: 3px solid #282c34;
+  margin: 15px 0;
+}
+
+.login {
+  min-height: 100vh;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 3em;
+  border: 3px solid #CFCFCF;
+}
+
+.login-ctrl {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  padding: 1em;
+}
+
+.login-failed {
+  background-color: #FFA7A7;
+  border: 2px dashed #D30000;
+}
+
+.login-hidden {
+  visibility: hidden;
+  border: 2px solid #000;
+}
+
+.login-form {
+  border: 2px solid #000;
+  padding: 3em;
+}
+
+.login-label {
+  
+}
+
+.login-input {
+  padding: 1em;
+  margin-left: 1em;
+  width: 100%;
+}
+
+.login-button {
+  padding: 0.75em;
+  width: 50%;
+  border: 2px solid #282c34;
+}
+
+.button {
+  min-width: 3em;
+  padding: 0.2em 0.4em;
+  border: 2px solid white;
+  cursor: pointer;
+}
+
+.button:hover {
+  background-color: #CFCFCF;
+  color: #000;
+  border-color: #000;
+}
+
+.dropdown {
+  padding: 3%;
+  min-width: 12em;
+}
+
+.status-success {
+  background-color: #BAFFCF;
+  color: #000;
+}
+
+.status-failure {
+  background-color: #FFA7A7;
+  color: #000;
+}
+
+.online {
+  background-color: #BAFFCF;
+  border: 5px solid #009852;
+}
+
+.onoffline {
+  background-color: #BAFFCF;
+  border: 5px solid #AD0000;
+}
+
+.offline {
+  background-color: #FFA7A7;
+  border: 5px solid #AD0000;
+}
+
+.finished {
+  background-color: #CFCFCF;
+  border: 5px solid #8B8B8B;
+}
+
+.available {
+  border: 5px dashed #000;
+  cursor: pointer;
+}
+
+.id-input {
+  width: 50%;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
