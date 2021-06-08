@@ -2,6 +2,9 @@
 
 const { Sequelize, DataTypes, Model } = require("sequelize");
 
+/**
+ * A Status entity representing the status of a student.
+ */
 class Status extends Model {
     /**
      * Initializes the Status model.

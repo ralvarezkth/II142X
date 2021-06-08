@@ -2,6 +2,9 @@
 
 const { Sequelize, DataTypes, Model } = require("sequelize");
 
+/**
+ * A Ping entity representing the random ping value given to students.
+ */
 class Ping extends Model {
     /**
      * Initializes the Ping model.

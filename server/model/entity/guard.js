@@ -2,6 +2,9 @@
 
 const { Sequelize, DataTypes, Model } = require("sequelize");
 
+/**
+ * A Guard entity representing an exam invigilator.
+ */
 class Guard extends Model {
     /**
      * Initializes the Guard model.

@@ -2,6 +2,9 @@
 
 const { Sequelize, DataTypes, Model } = require("sequelize");
 
+/**
+ * A Student entity representing the student taking the exam.
+ */
 class Student extends Model {
     /**
      * Initializes the Student model.

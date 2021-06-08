@@ -2,6 +2,9 @@
 
 const { Sequelize, DataTypes, Model } = require("sequelize");
 
+/**
+ * A UsbClient entity representing the usb flash drive.
+ */
 class UsbClient extends Model {
     /**
      * Initializes the UsbClient model.

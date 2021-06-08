@@ -2,6 +2,9 @@
 
 const { Sequelize, DataTypes, Model } = require("sequelize");
 
+/**
+ * A Session entity representing an exam session.
+ */
 class Session extends Model {
     /**
      * Initializes the Session model.

@@ -2,6 +2,9 @@
 
 const { Sequelize, DataTypes, Model } = require("sequelize");
 
+/**
+ * A Room entity representing a room in which exams are taken.
+ */
 class Room extends Model {
     /**
      * Initializes the Room model.
