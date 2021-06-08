@@ -1,3 +1,8 @@
+* [Moodle](#moodle)
+* [Client](#client)
+* [Placeholder](#placeholder)
+* [API Reference](#API-reference)
+
 # Moodle
 
 # Client
