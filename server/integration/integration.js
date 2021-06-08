@@ -463,14 +463,13 @@ class Integration {
      * @returns          The created session.
      */
     async createSession(guardId, grid, students) {
-        //FIXME: validations
         const validatedGuardId = this.validator.validateId(guardId);
         if (validatedGuardId.error) {
             throw new WError({ name: "DataValidationError", info: { message: validatedGuardId.error } }, "Guard id validation has failed.");
         }
-        const toBeValidatedGrid = grid;
-        if (toBeValidatedGrid.error) {
-            throw new WError({ name: "DataValidationError", info: { message: toBeValidatedGrid.error } }, "Grid validation has failed.");
+        const vgrid = grid;
+        if (vgrid.error) {
+            throw new WError({ name: "DataValidationError", info: { message: vgrid.error } }, "Grid validation has failed.");
         }
         if (students.error) {
             throw new WError({ name: "DataValidationError", info: { message: students.error } }, "Array of students validation has failed.");
@@ -481,7 +480,7 @@ class Integration {
                 await Session.update({ statusId: 2 }, { where: { guardId: validatedGuardId } });
             }
             return await this.database.transaction(async t => {
-                const newSession = await Session.create({ guardId: validatedGuardId, grid: toBeValidatedGrid, statusId: 1 });
+                const newSession = await Session.create({ guardId: validatedGuardId, grid: vgrid, statusId: 1 });
                 for (const student of students) {
                     const foundStudent = await Student.findOne({ where: { usbId: student.usbId, sessionId: newSession.id }, transaction: t });
                     if (!foundStudent) {
@@ -541,7 +540,6 @@ class Integration {
      * @returns        The modified session.
      */
     async addStudentToSession(sessionId, student) {
-        // FIXME: validations
         const validatedSessionId = this.validator.validateId(sessionId);
         const validatedUsbId = this.validator.validateId(student.usbId);
         const position = student.pos;

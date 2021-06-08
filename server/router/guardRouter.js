@@ -98,16 +98,7 @@ router.put("/sessions/:id/students/:usbId/status/:statusId", function(req, res) 
 });
 
 /* POST /api/guard/sessions/:id/students - Add student to specified session. */
-/* request body example:
-        {
-            "student": {
-                "usbId": 3,
-                "pos": [1,0]
-            }
-        }
-*/
 router.post("/sessions/:id/students", function(req, res) {
-    // FIXME: validations
     const validator = new ValidatorUtil();
     const validatedSessionId = validator.validateId(parseInt(req.params.id));
     const student = req.body.student;
@@ -126,23 +117,7 @@ router.post("/sessions/:id/students", function(req, res) {
 });
 
 /* POST /api/guard/:id/session - Create new session. */
-/* request body example:
-        {
-            "session": {
-                "grid": {
-                    "rows": 2,
-                    "cols": 2
-                },
-                "students": [
-                    {"usbId": 4, "pos": [0,0]},
-                    {"usbId": 5, "pos": [0,1]},
-                    {"usbId": 6, "pos": [1,0]}
-                ]
-            }
-        }
-*/
 router.post("/:id/session", function(req, res) {
-    // FIXME: validation
     const validator = new ValidatorUtil();
     const validatedGuardId = validator.validateId(parseInt(req.params.id));
     const session = req.body.session;
