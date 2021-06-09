@@ -114,25 +114,6 @@ class Model {
   }
 
   /**
-   * Generates an object of the usb-client and its corresponding position.
-   * @returns an object describing the specified usb-client and its position.
-   */
-
-/*  getGridId(id) { BORT
-    let ids;
-
-    for (let i = 0; i < this.grid.length; i++) {
-      for (let j = 0; j < this.grid[i].length; j++) {
-        if (this.grid[i][j] && this.grid[i][j].id === id) {
-          ids = {usbId: Number(this.grid[i][j].id), pos: [i, j]};
-        }
-      }
-    }
-
-    return ids;
-  } */
-
-  /**
    * Generates a collection of the usb-clients with their corresponding position.
    * @returns an array of objects describing the existing usb-clients and their position.
    */

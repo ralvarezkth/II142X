@@ -1,13 +1,165 @@
-* [Moodle](#moodle)
-* [Client](#client)
-* [Placeholder](#placeholder)
+* [Configuration of student operating system](#Configuration-of-student-operating-system)
+* [Configuration of Moodle server](#Configuration-of-Moodle-server)
+* [Configuration of the Jobe server](#Configuration-of-the-Jobe-server)
+* [Utilizing the Observation Tool](#Utilizing-the-Observation-Tool)
 * [API Reference](#API-reference)
 
-# Moodle
+# An Ubuntu based examination environment for higher education institutions
 
-# Client
+The main problem is simply to mitigate the risk of cheating while allowing students to work in a natural environment on their own computers. The idea is also that exams should be able to be distributed and then submit over a network, which often is equivalent to the Internet.
 
-# Placeholder
+An image of a preconfigured operating system is not provided for several reasons including large files to host, risk of high bandwidth usage, the images would require continuous maintenance, and different needs and preferences among users. Instead, configuration advice is provided below. [Installing Ubuntu](https://ubuntu.com/tutorials/install-ubuntu-desktop#1-overview) is also not overly complex. 
+
+For the three upcoming sections it is assumed that a fresh Ubuntu installation is present. It was originally tested on Ubuntu 20.04.2.
+
+## Configuration of student operating system
+
+It is recommended to disable the man pages which may often contain resources that are deemed prohibited during an exam. This can be done by simply removing them:
+
+```
+sudo rm -rf /usr/share/man/*
+sudo rm -rf /usr/share/doc/*
+```
+
+**NOTE**: it may be preferable to remove man pages after all tools have been installed.
+
+It is recommended to disable the possibility to mount external storage so that students can not bring prohibited resources on an USB-drive. This can be done by blacklisting the driver, open the following file in a text editor:
+
+```
+/etc/modprobe.d/blacklist.conf
+```
+
+and add the line:
+
+```
+blacklist usb-storage
+```
+
+An alternative approach would be to remove the driver completely. Its location is:
+
+```
+/usr/lib/modules/<version>/kernel/drivers/usb/storage/usb-storage.ko
+```
+
+It is recommended to restrict the network access. In the proposed solution the only allowed traffic is to the Moodle (Learning Management System) server. First allow outgoing traffic to this server, like so:
+
+```
+sudo ufw allow out proto tcp to <IP> port 80,3001
+```
+
+The addition of port 3001 is for the Observation Tool and may otherwise be omitted.
+
+Then disable all other traffic from and to any source, if you want some specific port and protocol configuration, it can be done like this:
+
+```
+sudo ufw deny in proto tcp from any to any port 1:65535
+sudo ufw deny in proto udp from any to any port 1:65535
+sudo ufw deny out proto tcp to any port 1:65535
+sudo ufw deny out proto udp to any port 1:65535
+```
+
+or in short, with less flexibility, just:
+
+```
+sudo ufw deny in from any to any
+sudo ufw deny out from any to any
+```
+
+**NOTE**: the order in which the rules are added is of importance.
+
+Then configure a regular user account. This can be done by:
+
+```
+sudo adduser <username>
+```
+
+It is naturally imperative to make sure accounts with root privileges are not attainable for students.
+
+Then simply install the tools that should be available to students during their exam.
+
+## Configuration of Moodle server
+
+A database supported by Moodle, such as MySQL, is a requirement on the Moodle server. The [CodeRunner plugin](https://moodle.org/plugins/qtype_coderunner) must also be aquired from the Moodle plugin directory.
+
+There are a few different ways to install plugins in Moodle which can be read about in the [Moodle documentation](https://docs.moodle.org/311/en/Installing_plugins).
+
+Given [Moodle's excellent documentation](https://docs.moodle.org/311/en/Step-by-step_Installation_Guide_for_Ubuntu) the step-by-step will not be repeated here but rather referenced as it is based on Moodle version 3.9 and Ubuntu 20.04 which is what is being used in this solution.
+
+## Configuration of the Jobe server
+
+The Jobe server needs to be properly firewalled as there is no other protection from unauthorized access.
+
+The Jobe server may be used for other purposes as well, but in this context it is recommended to only allow incoming connections from the Moodle. This can be done by:
+
+```
+sudo ufw allow in proto tcp from <ip> port 80
+sudo ufw deny in from any to any
+sudo ufw deny out from any to any
+```
+
+Jobe provides detailed documentation of the installation process and the reader is thus referred to that [documentation](https://github.com/trampgeek/jobe).
+
+
+
+## Utilizing the Observation Tool
+
+Node.js and npm are required dependencies. PostgreSQL is also required on the server with a database named 'tentadb'.
+
+Simply clone this repository. If any of the project dependencies are missing, run:
+
+```
+npm install
+```
+
+The following file is the client ping utility:
+
+```
+client/src/cl.py
+```
+
+It should be placed on each USB-drive distributed to students. Each drive should have a unique id number, specified by the `id` variable (line 4) so make sure to modify it for each USB-drive. The timer interval in seconds can be set by changing the `timer_interval` variable (line 5). The client currently has some debug output for your convenience while setting up the system. Make sure to remove the `if-else` block (line 10-13) for live usage.
+
+Place the file in some directory that is not accessible to the student. For instance:
+
+```
+cd /
+sudo mkdir .obstool
+sudo cp <path>/cl.py .obstool/
+sudo chmod 700 .obstool
+sudo chmod 700 .obstool/cl.py
+```
+
+Then schedule the script to run at system startup.
+
+The server directory of the cloned repository can be placed anywhere on the Moodle server. Then, for a Linux system, launch it by:
+
+```
+PORT=3001 npm start
+```
+
+and for a Windows system
+
+```
+set PORT=3001 npm start
+```
+
+The client directory of the cloned repository can be placed anywhere on the invigilators computer. Simply enter the directory and run:
+
+```
+npm start
+```
+
+**NOTE**: the database needs to be manually populated with appropriate data depending on needs. There is an example seed.sql file in the server directory, which can be run by:
+
+```
+psql -U postgres -f seed.sql
+```
+
+There is similarly a drop.sql in the same directory should the need to reset the database arise:
+
+```
+psql -U postgres -f drop.sql
+```
 
 # API Reference
 ## Ping Server
@@ -711,6 +863,10 @@ Called to validate the grid type and values.
 
 | Param | Type | Description |
 | --- | --- | --- |
+<<<<<<< HEAD
 | grid | <code>Array.&lt;number&gt;</code> | The new grid to be set. |
 
 
+=======
+| grid | <code>Array.&lt;number&gt;</code> | The new grid to be set. |
+>>>>>>> feature/client
