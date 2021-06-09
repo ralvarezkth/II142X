@@ -1,7 +1,7 @@
-* [Configuration of student operating system](##Configuration-of-student-operating-system)
-* [Configuration of Moodle server](##Configuration-of-Moodle-server)
-* [Configuration of the Jobe server](##Configuration-of-the-Jobe-server)
-* [Utilizing the Observation Tool](##Utilizing-the-Observation-Tool)
+* [Configuration of student operating system](#Configuration-of-student-operating-system)
+* [Configuration of Moodle server](#Configuration-of-Moodle-server)
+* [Configuration of the Jobe server](#Configuration-of-the-Jobe-server)
+* [Utilizing the Observation Tool](#Utilizing-the-Observation-Tool)
 * [API Reference](#API-reference)
 
 # An Ubuntu based examination environment for higher education institutions
