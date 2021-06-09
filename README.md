@@ -109,7 +109,7 @@ Simply clone this repository. If any of the project dependencies are missing, ru
 
 ```
 npm install
-´´´
+```
 
 The following file is the client ping utility:
 
