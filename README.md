@@ -8,7 +8,7 @@
 
 The main problem is simply to mitigate the risk of cheating while allowing students to work in a natural environment on their own computers. The idea is also that exams should be able to be distributed and then submit over a network, which often is equivalent to the Internet.
 
-An image of a preconfigured operating system is not provided for several reasons including large files to host, risk of high bandwidth usage, the images would require continuous maintenance, and different needs and preferences among users. Instead, configuration advice is provided below. Installation of Ubuntu is also not overly complex, for further instructions see: 
+An image of a preconfigured operating system is not provided for several reasons including large files to host, risk of high bandwidth usage, the images would require continuous maintenance, and different needs and preferences among users. Instead, configuration advice is provided below. [Installation of Ubuntu](https://ubuntu.com/tutorials/install-ubuntu-desktop#1-overview) is also not overly complex. 
 
 For the three upcoming sections it is assumed that a fresh Ubuntu installation is present. It was originally tested on Ubuntu 20.04.2.
 
