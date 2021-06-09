@@ -1,10 +1,10 @@
+# An Ubuntu based examination environment for higher education institutions
+
 * [Configuration of student operating system](#Configuration-of-student-operating-system)
 * [Configuration of Moodle server](#Configuration-of-Moodle-server)
 * [Configuration of the Jobe server](#Configuration-of-the-Jobe-server)
 * [Utilizing the Observation Tool](#Utilizing-the-Observation-Tool)
 * [API Reference](#API-reference)
-
-# An Ubuntu based examination environment for higher education institutions
 
 The main problem is simply to mitigate the risk of cheating while allowing students to work in a natural environment on their own computers. The idea is also that exams should be able to be distributed and then submit over a network, which often is equivalent to the Internet.
 
