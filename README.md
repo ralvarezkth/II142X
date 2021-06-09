@@ -19,7 +19,7 @@ It is recommended to disable the man pages which may often contain resources tha
 ```
 sudo rm -rf /usr/share/man/*
 sudo rm -rf /usr/share/doc/*
-´´´
+```
 
 **NOTE**: it may be preferable to remove man pages after all tools have been installed.
 
@@ -27,25 +27,25 @@ It is recommended to disable the possibility to mount external storage so that s
 
 ```
 /etc/modprobe.d/blacklist.conf
-´´´
+```
 
 and add the line:
 
 ```
 blacklist usb-storage
-´´´
+```
 
 An alternative approach would be to remove the driver completely. Its location is:
 
 ```
 /usr/lib/modules/<version>/kernel/drivers/usb/storage/usb-storage.ko
-´´´
+```
 
 It is recommended to restrict the network access. In the proposed solution the only allowed traffic is to the Moodle (Learning Management System). First allow outgoing traffic to this server, like so:
 
 ```
 sudo ufw allow out proto tcp to <IP> port 80,3001
-´´´
+```
 
 The addition of port 3001 is for the Observation Tool and may otherwise be omitted.
 
@@ -56,14 +56,14 @@ sudo ufw deny in proto tcp from any to any port 1:65535
 sudo ufw deny in proto udp from any to any port 1:65535
 sudo ufw deny out proto tcp to any port 1:65535
 sudo ufw deny out proto udp to any port 1:65535
-´´´
+```
 
 or in short, with less flexibility, just:
 
 ```
 sudo ufw deny in from any to any
 sudo ufw deny out from any to any
-´´´
+```
 
 **NOTE**: the order in which the rules are added is of importance.
 
@@ -71,7 +71,7 @@ Then configure a regular user account. This can be done by:
 
 ```
 sudo adduser <username>
-´´´
+```
 
 It is naturally imperative to make sure accounts with root privileges are not attainable for students.
 
@@ -79,17 +79,11 @@ Then simply install the tools that should be available to students during their 
 
 ## Configuration of Moodle server
 
-A database supported by Moodle, such as MySQL, is a requirement on the on the Moodle server. The CodeRunner plugin must also be aquired from the Moodle plugin directory:
+A database supported by Moodle, such as MySQL, is a requirement on the on the Moodle server. The [CodeRunner plugin](https://moodle.org/plugins/qtype_coderunner) must also be aquired from the Moodle plugin directory.
 
-https://moodle.org/plugins/qtype_coderunner
+There are a few different ways to install plugins in Moodle which can be read about in the [Moodle documentation](https://docs.moodle.org/311/en/Installing_plugins).
 
-There are a few different ways to install plugins in Moodle which can be read about here:
-
-https://docs.moodle.org/311/en/Installing_plugins
-
-Given Moodle's excellent documentation the step-by-step will not be repeated here but rather referenced as it is based on Moodle version 3.9 and Ubuntu 20.04 which is what is being used in this solution. It can be found here:
-
-https://docs.moodle.org/311/en/Step-by-step_Installation_Guide_for_Ubuntu
+Given [Moodle's excellent documentation](https://docs.moodle.org/311/en/Step-by-step_Installation_Guide_for_Ubuntu) the step-by-step will not be repeated here but rather referenced as it is based on Moodle version 3.9 and Ubuntu 20.04 which is what is being used in this solution.
 
 ## Configuration of the Jobe server
 
@@ -101,11 +95,11 @@ The Jobe server may be used for other purposes as well, but in this context it i
 sudo ufw allow in proto tcp from <ip> port 80
 sudo ufw deny in from any to any
 sudo ufw deny out from any to any
-´´´
+```
 
-Jobe provides detailed documentation of the installation process and the reader is thus referred to that documentation:
+Jobe provides detailed documentation of the installation process and the reader is thus referred to that [documentation](https://github.com/trampgeek/jobe).
 
-https://github.com/trampgeek/jobe
+
 
 ## Utilizing the Observation Tool
 
@@ -121,7 +115,7 @@ The following file is the client ping utility:
 
 ```
 client/src/cl.py
-´´´
+```
 
 It should be placed on each USB-drive distributed to students. Each drive should have a unique id number, specified by the `id` variable (line 4) so make sure to modify it for each USB-drive. The timer interval in seconds can be set by changing the `timer_interval` variable (line 5). The client currently has some debug output for your convenience while setting up the system. Make sure to remove the `if-else` block (line 10-13) for live usage.
 
@@ -133,7 +127,7 @@ sudo mkdir .obstool
 sudo cp <path>/cl.py .obstool/
 sudo chmod 700 .obstool
 sudo chmod 700 .obstool/cl.py
-´´´
+```
 
 Then schedule the script to run at system startup.
 
@@ -141,31 +135,31 @@ The server directory of the cloned repository can be placed anywhere on the Mood
 
 ```
 PORT=3001 npm start
-´´´
+```
 
 and for a Windows system
 
 ```
 set PORT=3001 npm start
-´´´
+```
 
 The client directory of the cloned repository can be placed anywhere on the invigilators computer. Simply enter the directory and run:
 
 ```
 npm start
-´´´
+```
 
 **NOTE**: the database needs to be manually populated with appropriate data depending on needs. There is an example seed.sql file in the server directory, which can be run by:
 
 ```
 psql -U postgres -f seed.sql
-´´´
+```
 
 There is similarly a drop.sql in the same directory should the need to reset the database arise:
 
 ```
 psql -U postgres -f drop.sql
-´´´
+```
 
 # API Reference
 ## Ping Server
