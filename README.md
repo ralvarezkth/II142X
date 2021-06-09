@@ -41,7 +41,7 @@ An alternative approach would be to remove the driver completely. Its location i
 /usr/lib/modules/<version>/kernel/drivers/usb/storage/usb-storage.ko
 ```
 
-It is recommended to restrict the network access. In the proposed solution the only allowed traffic is to the Moodle (Learning Management System). First allow outgoing traffic to this server, like so:
+It is recommended to restrict the network access. In the proposed solution the only allowed traffic is to the Moodle (Learning Management System) server. First allow outgoing traffic to this server, like so:
 
 ```
 sudo ufw allow out proto tcp to <IP> port 80,3001
@@ -79,7 +79,7 @@ Then simply install the tools that should be available to students during their 
 
 ## Configuration of Moodle server
 
-A database supported by Moodle, such as MySQL, is a requirement on the on the Moodle server. The [CodeRunner plugin](https://moodle.org/plugins/qtype_coderunner) must also be aquired from the Moodle plugin directory.
+A database supported by Moodle, such as MySQL, is a requirement on the Moodle server. The [CodeRunner plugin](https://moodle.org/plugins/qtype_coderunner) must also be aquired from the Moodle plugin directory.
 
 There are a few different ways to install plugins in Moodle which can be read about in the [Moodle documentation](https://docs.moodle.org/311/en/Installing_plugins).
 
